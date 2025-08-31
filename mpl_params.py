@@ -4,9 +4,9 @@ import cartopy.feature as cfeature
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 
 
-def mpl_params(size=12, font_family='Candara', mathtext = 'stixsans', title_size = 14):
+def mpl_params(size=12, font_family='Serif', mathtext = 'stixsans', title_size = 14):
     """ 
-    plt.rcParams.update(my_params(size=16, font_family='Candara'))
+    plt.rcParams.update(mpl_params(size=16, font_family='Candara'))
 
     https://jonathansoma.com/lede/data-studio/matplotlib/list-all-fonts-available-in-matplotlib-plus-samples/
     """
@@ -25,25 +25,31 @@ def mpl_params(size=12, font_family='Candara', mathtext = 'stixsans', title_size
 
     return params
 
-def map_params(projection_str='PlateCarree', figsize=(10, 8), extent='global', gl_and_labels=True):
+def map_params(projection_str='PlateCarree', figsize=(10, 8), extent='global', gl_and_labels=False, premade_ax=False):
     projection_dict = {
-                'PlateCarree': ccrs.PlateCarree(),
+                'PlateCarree': ccrs.PlateCarree(central_longitude=-159.75),
                 'Mercator': ccrs.Mercator(),
                 'Robinson': ccrs.Robinson(),
                 'Mollweide': ccrs.Mollweide(),
                 'Orthographic': ccrs.Orthographic(),
                 }
-    fig,ax = plt.subplots(subplot_kw={'projection': projection_dict[projection_str]}, figsize=figsize)
+    if not premade_ax:
+        fig,ax = plt.subplots(subplot_kw={'projection': projection_dict[projection_str]}, figsize=figsize)
 #     ax = plt.axes(projection=projection_dict[projection_str], figsize=figsize)
+    else:
+        ax = premade_ax; fig=None
+        
     if extent == 'global':
         ax.set_global()
     else:
         ax.set_extent(extent, crs=ccrs.PlateCarree())
 
+    data_crs = ccrs.PlateCarree()
+    proj = projection_dict[projection_str]
     # Add land
     land = cfeature.NaturalEarthFeature('physical', 'land', '50m',
                                         edgecolor='face', facecolor='lightgray')
-    ax.add_feature(land, zorder=0)
+    ax.add_feature(land, zorder=10)
 
     if gl_and_labels:
         gl = ax.gridlines(draw_labels=True, linewidth=1, color='gray', alpha=0.25, linestyle='--')
@@ -54,5 +60,5 @@ def map_params(projection_str='PlateCarree', figsize=(10, 8), extent='global', g
         gl.xlabel_style = {'size': 10, 'color': 'black'}
         gl.ylabel_style = {'size': 10, 'color': 'black'}
 
-    return ax
+    return fig,ax, proj, data_crs
 
